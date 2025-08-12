@@ -18,17 +18,12 @@
     "firebase-admin": "^13.4.0",
     "http-status-codes": "^2.3.0",
     "mongoose": "^8.17.1",
-    "nodemailer": "^7.0.5",
-    "serverless-http": "^3.2.0"
+    "nodemailer": "^7.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "eslint": "^9.33.0",
     "globals": "^16.3.0",
-    "nodemon": "^3.1.10",
-    "serverless": "^4.17.1",
-    "serverless-offline": "^14.4.0",
-    "serverless-plugin-include-dependencies": "^6.1.1",
-    "serverless-ssm-fetch": "^2.0.0"
+    "nodemon": "^3.1.10"
   }
 }

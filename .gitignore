@@ -2,3 +2,5 @@
 serviceAccountKey.json
 node_modules
 lambda.js
+serverless.yml
+package-lock.json
