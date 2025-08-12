@@ -1,0 +1,33 @@
+service: tannee-crm
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-southeast-1
+  stage: prod
+  timeout: 29
+  environment:
+    NODE_ENV: production
+    MONGO_URI: mongodb+srv://tanhuynhatnguyen2003:6XiewJurKaE9HHAl@cluster0-tanhuynhatnguy.g3tqg.mongodb.net/crm_tanni?retryWrites=true&w=majority&appName=Cluster0-tanhuynhatnguyen
+    FIREBASE_API_KEY: AIzaSyDLMd1DGmH4Gd-YyD9dRoPSE-nDd79XIdY
+    FIREBASE_PROJECT_ID: web-crm-d024a
+    FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@web-crm-d024a.iam.gserviceaccount.com
+    FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCXuKGXC1PIYsSC\n1euRDpc/u8v8pe71RUodhvdwHBIVdETFR1SIswtB9twxU6Ao//cnKXM4WofAUxpC\nbzJpqQswashzW4u83pSVPMnhkhlRvUTFvCaBOEw1quT9gy7OmYFvHCg7/3Fj4poT\n2lP0/CrRJmooaAn5G6d18qiiSkxpnNSwkZuN8Sb6MwM21kafM/4c+vvttvNi38B8\nHA37tv+En9w8umN/sK54qnLWFGK9a43sWf9jePlS6L9Pz76TMkM0nsNRKns8m6rQ\n5sBWFE/t0ZNkFUCTyMyItI2b3h7ALu1Gu24tL9H8jhP7TeggdXCXyeHowRB7gvFa\nOG/TBE7dAgMBAAECggEAFLHdLrBfmPtp4QvDUjmqhUm9IQTUM5XkLmNgwGS/zbfa\ngotAe1XqsPB2Z+8Hb1g8stWLTxJAJopfUFUBDBr/+PZzyZJg3N4CZ9nPEqreM8FM\njmkj2mfes0pQakj4uzsChfCSB18ILS71Q8R5w7aas4UZIVJRm+46+RJkkKBwTE5f\nh8or/4QQ4FsF+8wAv/LvPrmiEJ+T6ygCgP0DEYF5+1ew5TM/vhwjK+2BQgIXQbW7\nG94qjyj+nfy749jv1gq77c5K49/a/4a2qssB/XP8+dIyHS3akqTUm+bjElfuSdXw\nHLf8W7SkdDOHef3IFWHyL0VcZ1uaa4Bl7wnttxrWEQKBgQDJ7ixbmYS9Hu7JGdqo\nhzpoHX2aMDzeHC7DHoVJ5tspk/nM8/8EDBp/w8u+49qX62mFN4Mm6nRD6aG0ynlp\n3Tg0LrhJHHlWI+qgwEVaeZAW/pjopMqV8xuxJsYrfABT8UTxxmAP5Do1IwAYKWft\nu4XX0G0/n0Dqnt1NpYwi138ErQKBgQDAWL68Cz72GQp/dvS26rNW0Y0YejllegMj\nwSl0O1UPRVUsN/Bciqo6XDd7Vg3auFH7QhZJlvNRTSUqiRf+3qtFGN3Q5QlEVE1Y\nhJRnDuI9/pZ28fPojLfsvxjYv+/fiMuOamy8IfDC3R7ZjA7Mj+CcM7CjRNNEptIH\no5SLq2mI8QKBgQCs4lvb+O4qtUcfqiEJVO3uogEdd9tFFr/6kjDv+tT9HhIrJWPa\n5Tny1YGlZ5OJqiXnxoVlVipA0tB95zRYLOyn0LA6+EPyOkHxa2x1b8qrxULJO/2u\nsDuvSlE0fbASLmkmzv8D3BTx1YuJJDo00e5fvbUrWX/M4EL87ZWzZuj66QKBgQCs\n29RlyDGIF08A6FXaQSh0wJPtyIHmeXVy33gytdOmiqeVupvvfsqm8hMGa3q98mHy\nzRyce+UlTpA1HsmKym/fBA7sWbkvSBfOki+QQqb+EdsFAEIz3qq4P7DDshKPsC9H\nSMt5c4McjH3aAm2WV0MC/c0jnYnEK6ubI94uexi38QKBgE+OzNMHOtGNowwWcq4E\nzmLFlt4uz85/5Ptpr+noEBhe8NEiO0LpSTlNLou2Ir3odLl0hYS9wzx32hVEEjVQ\nwDsyA/7vsCqGKAMCtaNTrf424vqUoupR8OfogfnZ3bD340LxWMSC3YmNO0r2zI1Y\nTX8Sex2aa8QsGZVFIZhDtvsb\n-----END PRIVATE KEY-----\n"
+    NOTIFY_EMAIL: emailnoreply090@gmail.com
+    NOTIFY_EMAIL_PASS: tnfx oohp gbsb hpho
+
+functions:
+  api:
+    handler: src/lambda.handler
+    events:
+      - httpApi:
+          path: /crm-v1/{proxy+}
+          method: "*"
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-include-dependencies
+
+package:
+  patterns:
+    - "!node_modules/aws-sdk/**" # AWS SDK đã có sẵn trong Lambda

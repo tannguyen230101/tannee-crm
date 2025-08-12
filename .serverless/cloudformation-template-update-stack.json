@@ -1,0 +1,354 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ServerlessDeploymentBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "ServerlessDeploymentBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ApiLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/tannee-crm-prod-api"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "tannee-crm",
+                  "prod",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:TagResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tannee-crm-prod*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tannee-crm-prod*:*:*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "tannee-crm",
+              "prod",
+              {
+                "Ref": "AWS::Region"
+              },
+              "lambdaRole"
+            ]
+          ]
+        }
+      }
+    },
+    "ApiLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/tannee-crm/prod/1755016693217-2025-08-12T16:38:13.217Z/tannee-crm.zip"
+        },
+        "Handler": "src/lambda.handler",
+        "Runtime": "nodejs18.x",
+        "FunctionName": "tannee-crm-prod-api",
+        "MemorySize": 1024,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "production",
+            "MONGO_URI": "mongodb+srv://tanhuynhatnguyen2003:6XiewJurKaE9HHAl@cluster0-tanhuynhatnguy.g3tqg.mongodb.net/crm_tanni?retryWrites=true&w=majority&appName=Cluster0-tanhuynhatnguyen",
+            "FIREBASE_API_KEY": "AIzaSyDLMd1DGmH4Gd-YyD9dRoPSE-nDd79XIdY",
+            "FIREBASE_PROJECT_ID": "web-crm-d024a",
+            "FIREBASE_CLIENT_EMAIL": "firebase-adminsdk-fbsvc@web-crm-d024a.iam.gserviceaccount.com",
+            "FIREBASE_PRIVATE_KEY": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCXuKGXC1PIYsSC\n1euRDpc/u8v8pe71RUodhvdwHBIVdETFR1SIswtB9twxU6Ao//cnKXM4WofAUxpC\nbzJpqQswashzW4u83pSVPMnhkhlRvUTFvCaBOEw1quT9gy7OmYFvHCg7/3Fj4poT\n2lP0/CrRJmooaAn5G6d18qiiSkxpnNSwkZuN8Sb6MwM21kafM/4c+vvttvNi38B8\nHA37tv+En9w8umN/sK54qnLWFGK9a43sWf9jePlS6L9Pz76TMkM0nsNRKns8m6rQ\n5sBWFE/t0ZNkFUCTyMyItI2b3h7ALu1Gu24tL9H8jhP7TeggdXCXyeHowRB7gvFa\nOG/TBE7dAgMBAAECggEAFLHdLrBfmPtp4QvDUjmqhUm9IQTUM5XkLmNgwGS/zbfa\ngotAe1XqsPB2Z+8Hb1g8stWLTxJAJopfUFUBDBr/+PZzyZJg3N4CZ9nPEqreM8FM\njmkj2mfes0pQakj4uzsChfCSB18ILS71Q8R5w7aas4UZIVJRm+46+RJkkKBwTE5f\nh8or/4QQ4FsF+8wAv/LvPrmiEJ+T6ygCgP0DEYF5+1ew5TM/vhwjK+2BQgIXQbW7\nG94qjyj+nfy749jv1gq77c5K49/a/4a2qssB/XP8+dIyHS3akqTUm+bjElfuSdXw\nHLf8W7SkdDOHef3IFWHyL0VcZ1uaa4Bl7wnttxrWEQKBgQDJ7ixbmYS9Hu7JGdqo\nhzpoHX2aMDzeHC7DHoVJ5tspk/nM8/8EDBp/w8u+49qX62mFN4Mm6nRD6aG0ynlp\n3Tg0LrhJHHlWI+qgwEVaeZAW/pjopMqV8xuxJsYrfABT8UTxxmAP5Do1IwAYKWft\nu4XX0G0/n0Dqnt1NpYwi138ErQKBgQDAWL68Cz72GQp/dvS26rNW0Y0YejllegMj\nwSl0O1UPRVUsN/Bciqo6XDd7Vg3auFH7QhZJlvNRTSUqiRf+3qtFGN3Q5QlEVE1Y\nhJRnDuI9/pZ28fPojLfsvxjYv+/fiMuOamy8IfDC3R7ZjA7Mj+CcM7CjRNNEptIH\no5SLq2mI8QKBgQCs4lvb+O4qtUcfqiEJVO3uogEdd9tFFr/6kjDv+tT9HhIrJWPa\n5Tny1YGlZ5OJqiXnxoVlVipA0tB95zRYLOyn0LA6+EPyOkHxa2x1b8qrxULJO/2u\nsDuvSlE0fbASLmkmzv8D3BTx1YuJJDo00e5fvbUrWX/M4EL87ZWzZuj66QKBgQCs\n29RlyDGIF08A6FXaQSh0wJPtyIHmeXVy33gytdOmiqeVupvvfsqm8hMGa3q98mHy\nzRyce+UlTpA1HsmKym/fBA7sWbkvSBfOki+QQqb+EdsFAEIz3qq4P7DDshKPsC9H\nSMt5c4McjH3aAm2WV0MC/c0jnYnEK6ubI94uexi38QKBgE+OzNMHOtGNowwWcq4E\nzmLFlt4uz85/5Ptpr+noEBhe8NEiO0LpSTlNLou2Ir3odLl0hYS9wzx32hVEEjVQ\nwDsyA/7vsCqGKAMCtaNTrf424vqUoupR8OfogfnZ3bD340LxWMSC3YmNO0r2zI1Y\nTX8Sex2aa8QsGZVFIZhDtvsb\n-----END PRIVATE KEY-----\n",
+            "NOTIFY_EMAIL": "emailnoreply090@gmail.com",
+            "NOTIFY_EMAIL_PASS": "tnfx oohp gbsb hpho"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ApiLogGroup"
+      ]
+    },
+    "ApiLambdaVersionbzXmB96gdFJzkq1kioy2ZqyUtCXsgOIQoKK9XgTGcg": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ApiLambdaFunction"
+        },
+        "CodeSha256": "IsyA7J7cSbyLGqP9s5GCtQm6+SwT2YwENm1/h3CXhhY="
+      }
+    },
+    "HttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "prod-tannee-crm",
+        "ProtocolType": "HTTP"
+      }
+    },
+    "HttpApiStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "StageName": "$default",
+        "AutoDeploy": true,
+        "DefaultRouteSettings": {
+          "DetailedMetricsEnabled": false
+        }
+      }
+    },
+    "ApiLambdaPermissionHttpApi": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ApiLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "HttpApi"
+              },
+              "/*"
+            ]
+          ]
+        }
+      }
+    },
+    "HttpApiIntegrationApi": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiLambdaFunction",
+            "Arn"
+          ]
+        },
+        "PayloadFormatVersion": "2.0",
+        "TimeoutInMillis": 30000
+      }
+    },
+    "HttpApiRouteAnyCrmDashv1ProxyVar": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "RouteKey": "ANY /crm-v1/{proxy+}",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "HttpApiIntegrationApi"
+              }
+            ]
+          ]
+        }
+      },
+      "DependsOn": "HttpApiIntegrationApi"
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      },
+      "Export": {
+        "Name": "sls-tannee-crm-prod-ServerlessDeploymentBucketName"
+      }
+    },
+    "ApiLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ApiLambdaVersionbzXmB96gdFJzkq1kioy2ZqyUtCXsgOIQoKK9XgTGcg"
+      },
+      "Export": {
+        "Name": "sls-tannee-crm-prod-ApiLambdaFunctionQualifiedArn"
+      }
+    },
+    "HttpApiId": {
+      "Description": "Id of the HTTP API",
+      "Value": {
+        "Ref": "HttpApi"
+      },
+      "Export": {
+        "Name": "sls-tannee-crm-prod-HttpApiId"
+      }
+    },
+    "HttpApiUrl": {
+      "Description": "URL of the HTTP API",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "HttpApi"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            }
+          ]
+        ]
+      },
+      "Export": {
+        "Name": "sls-tannee-crm-prod-HttpApiUrl"
+      }
+    }
+  }
+}
