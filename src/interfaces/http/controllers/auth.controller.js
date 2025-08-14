@@ -12,7 +12,6 @@ const userRepo = new UserRepository();
 
 exports.login = async (req, res) => {
   try {
-    console.log("Body received:", req.body);
     const loginUser = new LoginUseCase(userRepo);
     const result = await loginUser.execute(req.body);
 
