@@ -40,7 +40,8 @@ module.exports = class LoginUseCase {
         // Phân tích và ném lỗi cụ thể
         if (
           firebaseErrorMessage === "EMAIL_NOT_FOUND" ||
-          firebaseErrorMessage === "INVALID_PASSWORD"
+          firebaseErrorMessage === "INVALID_PASSWORD" ||
+          firebaseErrorMessage === "INVALID_LOGIN_CREDENTIALS"
         ) {
           throw new AppError(
             "Email hoặc mật khẩu không đúng.",
