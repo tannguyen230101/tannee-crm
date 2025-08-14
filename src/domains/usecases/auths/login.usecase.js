@@ -44,7 +44,7 @@ module.exports = class LoginUseCase {
         ) {
           throw new AppError(
             "Email hoặc mật khẩu không đúng.",
-            StatusCodeEnum.unauthorized
+            StatusCodeEnum.badRequest
           );
         }
         // Có thể thêm các trường hợp khác như USER_DISABLED, ...
