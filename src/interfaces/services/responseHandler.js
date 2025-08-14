@@ -8,6 +8,7 @@ const sendResponse = (res, {
   returnData = null,
   accessToken = null,
   refreshToken = null,
+  expiresIn = null, 
 }) => {
   // Nếu code không hợp lệ thì fallback thành 500
   const safeCode = (typeof code === 'number' && code >= 100 && code < 600) ? code : 500;
@@ -20,6 +21,7 @@ const sendResponse = (res, {
   if (returnData !== null) body.data = returnData;
   if (accessToken) body.accessToken = accessToken;
   if (refreshToken) body.refreshToken = refreshToken;
+  if (expiresIn) body.expiresIn = expiresIn; 
 
   const response = {
     statusCode: safeCode,

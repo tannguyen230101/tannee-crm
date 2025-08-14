@@ -9,7 +9,10 @@ module.exports = class LoginUseCase {
 
   async execute({ email, password }) {
     if (!email || !password) {
-      throw new AppError("Email and password are required", StatusCodeEnum.badRequest);
+      throw new AppError(
+        "Email and password are required",
+        StatusCodeEnum.badRequest
+      );
     }
     // const { email, password } = data;
     // 1. Gọi Firebase REST API đăng nhập
@@ -31,17 +34,41 @@ module.exports = class LoginUseCase {
 
       // fetch không tự parse JSON như axios, nên phải gọi .json()
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        const errorData = await res.json(); // Lấy nội dung lỗi từ Firebase
+        const firebaseErrorMessage = errorData.error.message;
+
+        // Phân tích và ném lỗi cụ thể
+        if (
+          firebaseErrorMessage === "EMAIL_NOT_FOUND" ||
+          firebaseErrorMessage === "INVALID_PASSWORD"
+        ) {
+          throw new AppError(
+            "Email hoặc mật khẩu không đúng.",
+            StatusCodeEnum.unauthorized
+          );
+        }
+        // Có thể thêm các trường hợp khác như USER_DISABLED, ...
+
+        // Nếu là lỗi khác, ném lỗi chung
+        throw new AppError(
+          firebaseErrorMessage || "Lỗi đăng nhập không xác định.",
+          StatusCodeEnum.unauthorized
+        );
       }
 
       firebaseUser = await res.json();
       // { idToken, refreshToken, expiresIn, localId, email, ... }
     } catch (err) {
-      console.error("Axios error details:", {
-        status: err,
-        data: err,
-      });
-      throw new AppError(err, StatusCodeEnum.unauthorized);
+      // Bắt lỗi AppError đã ném ở trên hoặc các lỗi khác
+      if (err instanceof AppError) {
+        throw err;
+      }
+      // Xử lý các lỗi khác (ví dụ: lỗi mạng,...)
+      console.error("Lỗi đăng nhập Firebase:", err);
+      throw new AppError(
+        "Đã có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại sau.",
+        StatusCodeEnum.internalServerError
+      );
     }
 
     // 2. Lấy user từ MongoDB
