@@ -52,7 +52,7 @@ module.exports = class LoginUseCase {
         // Nếu là lỗi khác, ném lỗi chung
         throw new AppError(
           firebaseErrorMessage || "Lỗi đăng nhập không xác định.",
-          StatusCodeEnum.unauthorized
+          StatusCodeEnum.badRequest
         );
       }
 
