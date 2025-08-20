@@ -34,6 +34,32 @@ module.exports = class ForgotPasswordUseCase {
     };
   }
 
+  async verifyOTP(data) {
+    const { email, confirmationCode } = data;
+    const user = await this.userRepository.findOne({ email });
+    if (!user) throw new AppError("User not found", StatusCodeEnum.notFound);
+
+    const now = new Date();
+
+    // Verify confirmation code and expiration
+    if (user.confirmationCode !== confirmationCode)
+      throw new AppError(
+        "Invalid confirmation code",
+        StatusCodeEnum.badRequest
+      );
+
+    if (new Date(user.codeExpiredAt) < now)
+      throw new AppError(
+        "Expired confirmation code",
+        StatusCodeEnum.badRequest
+      );
+
+    return {
+      code: StatusCodeEnum.success,
+      message: "Kiem tra thanh cong",
+    };
+  }
+
   async resetPassword(data) {
     const { email, confirmationCode, newPassword } = data;
     const user = await this.userRepository.findOne({ email });
@@ -42,11 +68,20 @@ module.exports = class ForgotPasswordUseCase {
     const now = new Date();
 
     // Verify confirmation code and expiration
-    if (user.confirmationCode !== confirmationCode || new Date(user.codeExpiredAt) < now)
-      throw new AppError("Invalid or expired confirmation code", StatusCodeEnum.badRequest);
+    if (
+      user.confirmationCode !== confirmationCode ||
+      new Date(user.codeExpiredAt) < now
+    )
+      throw new AppError(
+        "Invalid or expired confirmation code",
+        StatusCodeEnum.badRequest
+      );
 
     // Update password on FB
-    const response = await this.userRepository.updatePassword(user.firebaseUid, newPassword);
+    const response = await this.userRepository.updatePassword(
+      user.firebaseUid,
+      newPassword
+    );
 
     const updatedUser = {
       confirmationCode: null,
@@ -54,7 +89,7 @@ module.exports = class ForgotPasswordUseCase {
     };
 
     await this.userRepository.updateById(user?.id, updatedUser);
-    
+
     return {
       code: StatusCodeEnum.success,
       message: response.message,

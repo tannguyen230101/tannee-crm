@@ -8,6 +8,7 @@ AuthRoute.post("/login", AuthController.login);
 AuthRoute.post("/register", AuthController.register);
 AuthRoute.post("/confirm-email", AuthController.confirmEmail);
 AuthRoute.post("/forgot-password", AuthController.forgotPassword);
+AuthRoute.post("/verifyOTP", AuthController.verifyOTP);
 AuthRoute.post("/reset-password", AuthController.resetPassword);
 AuthRoute.post("/change-password", firebaseAuth, AuthController.changePassword);
 AuthRoute.post("/refresh-token", firebaseAuth, AuthController.refreshToken);

@@ -1,12 +1,12 @@
 const sendResponse = require("../../services/responseHandler");
 const StatusCodeEnum = require("../../../common/enums/statusCode.enum");
-const UserRepository = require('../../../domains/repositories/userRepository')
-const RegiserUser = require('../../../domains/usecases/auths/register.usecase')
-const ConfirmEmail = require('../../../domains/usecases/auths/confirmEmail.usecase')
-const RefreshTokenUseCase = require('../../../domains/usecases/auths/refreshToken.usecase');
-const LoginUseCase = require('../../../domains/usecases/auths/login.usecase');
-const ForgotPasswordUseCase = require('../../../domains/usecases/auths/forgotPassword.usecase');
-const ChangePasswordUseCase = require('../../../domains/usecases/auths/changePassword.usecase');
+const UserRepository = require("../../../domains/repositories/userRepository");
+const RegiserUser = require("../../../domains/usecases/auths/register.usecase");
+const ConfirmEmail = require("../../../domains/usecases/auths/confirmEmail.usecase");
+const RefreshTokenUseCase = require("../../../domains/usecases/auths/refreshToken.usecase");
+const LoginUseCase = require("../../../domains/usecases/auths/login.usecase");
+const ForgotPasswordUseCase = require("../../../domains/usecases/auths/forgotPassword.usecase");
+const ChangePasswordUseCase = require("../../../domains/usecases/auths/changePassword.usecase");
 
 const userRepo = new UserRepository();
 
@@ -29,7 +29,7 @@ exports.login = async (req, res) => {
       message: error.message || "Internal server error",
     });
   }
-}
+};
 
 exports.register = async (req, res) => {
   try {
@@ -63,7 +63,7 @@ exports.confirmEmail = async (req, res) => {
       message: error.message || "Internal server error",
     });
   }
-}
+};
 
 exports.refreshToken = async (req, res, next) => {
   try {
@@ -76,7 +76,7 @@ exports.refreshToken = async (req, res, next) => {
       message: result.message,
       accessToken: result.idToken,
       refreshToken: result.refreshToken,
-      returnData: result.expiresIn,      
+      returnData: result.expiresIn,
     });
   } catch (err) {
     next(err);
@@ -88,6 +88,20 @@ exports.forgotPassword = async (req, res, next) => {
     const { email } = req.body;
     const useCase = new ForgotPasswordUseCase(userRepo);
     const result = await useCase.execute(email);
+
+    return sendResponse(res, {
+      code: result.code,
+      message: result.message,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.verifyOTP = async (req, res, next) => {
+  try {
+    const useCase = new ForgotPasswordUseCase(userRepo);
+    const result = await useCase.verifyOTP(req.body);
 
     return sendResponse(res, {
       code: result.code,
@@ -113,7 +127,7 @@ exports.resetPassword = async (req, res, next) => {
 };
 
 exports.changePassword = async (req, res, next) => {
-   try {
+  try {
     const useCase = new ChangePasswordUseCase(userRepo);
     const result = await useCase.excute(req.body);
 
@@ -124,5 +138,4 @@ exports.changePassword = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
-
+};
